@@ -1,0 +1,89 @@
+<p-card>
+  <ng-template pTemplate="title">Bandeja de documentos</ng-template>
+  <ng-template pTemplate="subtitle">Lista de documentos procesados</ng-template>
+
+  <!-- 🔎 Filtros UI (signals) -->
+  <div class="grid align-items-center mb-3">
+    <div class="col-12 md:col-4">
+      <span class="p-input-icon-left w-full">
+        <i class="pi pi-search"></i>
+        <input pInputText
+               [ngModel]="search()"
+               (ngModelChange)="search.set($event)"
+               (keyup.enter)="page.set(0); cargar()"
+               placeholder="Buscar por usuario o instancia"
+               class="w-full" />
+      </span>
+    </div>
+
+    <div class="col-6 md:col-3">
+      <p-dropdown
+        [options]="estados"
+        [ngModel]="estado()"
+        (ngModelChange)="estado.set($event); page.set(0); cargar()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Estado">
+      </p-dropdown>
+    </div>
+
+    <div class="col-6 md:col-2">
+      <button pButton label="Buscar" icon="pi pi-search"
+              class="p-button-secondary" (click)="page.set(0); cargar()"></button>
+    </div>
+  </div>
+
+  <!-- ⚠️ Errores -->
+  <p-message *ngIf="error()" severity="danger" [text]="error()!"></p-message>
+
+  <!-- 🧭 Tabla con ORDEN EXACTO de columnas -->
+  <p-table 
+           styleClass="bandeja-table"
+           [value]="items()"
+           [paginator]="true"
+           [rows]="size()"
+           [totalRecords]="total()"
+           (onPage)="onPage($event)"
+           [lazy]="true"
+           [loading]="loading()"
+           responsiveLayout="scroll"
+           [tableStyle]="{'min-width':'1100px'}">
+
+    <!-- Encabezado -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 14rem">Usuario</th>         <!-- 1 -->
+        <th style="width: 12rem">Fecha registro</th>  <!-- 2 -->
+        <th>Instancia</th>                            <!-- 3 -->
+        <th>Juez</th>                                 <!-- 4 -->
+        <th>Especialista</th>                         <!-- 5 -->
+        <th style="width: 10rem">Estado</th>          <!-- 6 -->
+        <th style="width: 12rem" class="text-right">Acciones</th> <!-- 7 -->
+      </tr>
+    </ng-template>
+
+    <!-- Cuerpo -->
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.usuario }}</td>                               <!-- 1 -->
+        <td>{{ row.fechaRegistro | date:'short' }}</td>          <!-- 2 -->
+        <td>{{ row.instancia }}</td>                             <!-- 3 -->
+        <td>{{ row.juez }}</td>                                  <!-- 4 -->
+        <td>{{ row.especialista }}</td>                          <!-- 5 -->
+        <td>                                                     <!-- 6 -->
+          <p-tag [value]="row.estado" [severity]="colorEstado(row.estado)"></p-tag>
+        </td>
+        <td class="text-right">                                  <!-- 7 -->
+          <button pButton icon="pi pi-eye" class="p-button-text"
+                  (click)="ver(row)" [disabled]="!row.url"></button>
+          <button pButton icon="pi pi-download" class="p-button-text"
+                  (click)="descargar(row)" [disabled]="!row.url"></button>
+          <button pButton icon="pi pi-refresh" class="p-button-text"
+                  (click)="reintentar(row)" [disabled]="!row.id"></button>
+          <!--<button pButton icon="pi pi-trash" class="p-button-text p-button-danger"
+                  (click)="eliminar(row)" [disabled]="!row.id"></button>-->
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
